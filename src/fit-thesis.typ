@@ -1,11 +1,12 @@
 // Thesis template reproducing the look of the official FIT BUT LaTeX template
-// (fitthesis.cls, 2025 edition; see ../latex/): same page layout, fonts,
-// title page, front matter, headings, captions, contents and link colours.
+// (fitthesis.cls, 2025 edition): same page layout, fonts, title page, front
+// matter, headings, captions, contents and link colours.
 //
-//   #import "template/fit-thesis.typ": fit-thesis, appendix
-//   #show: fit-thesis.with(type: "habilitation", lang: "en", title: (en: [...], cs: [...]), ...)
+//   #import "@preview/but-fit-thesis:0.1.0": fit-thesis, appendix
+//   #show: fit-thesis.with(type: "master", lang: "en", title: (en: [...], cs: [...]), ...)
 //
-// Needs the fonts in ./fonts (passed via TYPST_FONT_PATHS by build.sh).
+// Open Sans (title page) and New Computer Modern Mono (code, URLs) are not
+// built into the Typst CLI; without them, the fallbacks below are used.
 
 #let _texts = (
   cs: (
@@ -84,7 +85,7 @@
 #let _left = 98pt // 3.46cm
 #let _width = 431pt // 15.2cm
 #let _font-body = "New Computer Modern"
-#let _font-mono = "New Computer Modern Mono"
+#let _font-mono = ("New Computer Modern Mono", "DejaVu Sans Mono")
 #let _font-title = "Open Sans"
 #let _red = rgb(223, 52, 30)
 #let _green = rgb("#2f8f00")
@@ -157,7 +158,7 @@
     }
 
     v(7.5pt)
-    image(if print { "vut-logo-bw.svg" } else { "vut-logo-color.svg" }, width: 120pt)
+    image(if print { "assets/vut-logo-bw.svg" } else { "assets/vut-logo-color.svg" }, width: 120pt)
     v(31.3pt)
     pair(18pt, 11pt, _texts.at(lang).university, _texts.at(other).university)
     if faculty != none {

@@ -1,4 +1,4 @@
-review/
+reviews/
 
 ## Direnv
 .direnv/
@@ -334,3 +334,6 @@ TSWLatexianTemp*
 #*Notes.bib
 
 thesis.pdf
+
+## Local package link created by build.sh
+.typst-packages/

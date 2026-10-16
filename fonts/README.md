@@ -1,7 +1,9 @@
-# Bundled fonts
+# Fonts
 
-Fonts used by `../fit-thesis.typ` that Typst does not ship with. The build
-script passes this directory to Typst via `TYPST_FONT_PATHS`.
+Fonts used by `../src/fit-thesis.typ` that Typst does not ship with. Typst
+packages cannot contain fonts, so they are kept here for local builds only (not
+part of the published package). The build script passes this directory to Typst
+via `TYPST_FONT_PATHS`.
 
 | File | Family | Used for | Source | License |
 |---|---|---|---|---|

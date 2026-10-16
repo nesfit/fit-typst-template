@@ -6,8 +6,9 @@
 #   -w, --watch   rebuild whenever a source file changes (Ctrl+C to stop)
 #   -o, --open    open the PDF after the first successful build
 #
-# SOURCE defaults to thesis.typ, OUTPUT to SOURCE with a .pdf extension;
-# both are relative to the repository root.
+# SOURCE defaults to template/thesis.typ, OUTPUT to thesis.pdf; both are
+# relative to the repository root. The `@preview/but-fit-thesis` import in the
+# template resolves to this checkout, not to the published package.
 #
 # Uses `typst` from PATH (e.g. inside `nix develop`), otherwise `tinymist`
 # from PATH or the one downloaded by Zed's Typst extension, which embeds the
@@ -36,8 +37,8 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
-source_file=${args[0]:-thesis.typ}
-output_file=${args[1]:-${source_file%.typ}.pdf}
+source_file=${args[0]:-template/thesis.typ}
+output_file=${args[1]:-$(basename "${source_file%.typ}").pdf}
 output_path=./${output_file#./}
 
 cd "$(dirname "$0")"
@@ -93,7 +94,23 @@ case $(uname -s) in
   MINGW* | MSYS* | CYGWIN*) font_sep=';' ;;
   *) font_sep=':' ;;
 esac
-export TYPST_FONT_PATHS="template/fonts${TYPST_FONT_PATHS:+$font_sep$TYPST_FONT_PATHS}"
+export TYPST_FONT_PATHS="fonts${TYPST_FONT_PATHS:+$font_sep$TYPST_FONT_PATHS}"
+
+# Serve this checkout as @preview/but-fit-thesis:<version>: Typst looks into the
+# local package directory first, for every namespace.
+version=$(sed -n 's/^version *= *"\(.*\)"/\1/p' typst.toml)
+package_dir=.typst-packages/preview/but-fit-thesis
+if [ ! -e "$package_dir/$version" ]; then
+  # Never recurse: the entries are links to this checkout.
+  rm -f "$package_dir"/* 2>/dev/null || true
+  mkdir -p "$package_dir"
+  case $(uname -s) in
+    # A junction needs no administrator rights or developer mode.
+    MINGW* | MSYS* | CYGWIN*) MSYS2_ARG_CONV_EXCL="*" cmd.exe /c mklink /J "$(cygpath -w "$PWD/$package_dir/$version")" "$(cygpath -w "$PWD")" >/dev/null ;;
+    *) ln -s ../../.. "$package_dir/$version" ;;
+  esac
+fi
+export TYPST_PACKAGE_PATH=.typst-packages
 
 build() {
   # Viewers such as Foxit or Acrobat lock the PDF on Windows; opening it for append detects that without modifying it.
@@ -126,7 +143,7 @@ fi
 
 # tinymist has no watch mode, so poll the inputs and rebuild on change.
 inputs() {
-  find . -name .git -prune -o -type f \
+  find . \( -name .git -o -name .typst-packages \) -prune -o -type f \
     \( -name '*.typ' -o -name '*.yaml' -o -name '*.yml' -o -name '*.bib' -o -name '*.csl' \
     -o -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.svg' -o -name '*.pdf' \) \
     ! -path "$output_path" "$@" -print
